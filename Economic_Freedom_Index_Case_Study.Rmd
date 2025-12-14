@@ -1,0 +1,1066 @@
+---
+title: "Economic Freedom Index 2019 — Descriptive Report"
+author: "Grace Bianchi"
+date: "2025-10-14"
+output: pdf_document
+---
+
+# Introduction to the Economic Freedom Index 2019 data set
+
+**Context**
+
+The Economic Freedom Index is poised to help readers track over two decades of 
+the advancement in economic freedom, prosperity, and opportunity and promote 
+these ideas in their homes, schools, and communities. The Index covers 12 
+freedoms – from property rights to financial freedom – in 186 countries. The 
+central variable is 2019 Score, which summarizes the degree of economic freedom
+with a score from 0-100. A higher score indicates greater economic freedom.
+
+**Content**
+
+The data (last updated 26/02/2019) is presented in CSV format as follows: 
+CountryID, Country Name, WEBNAME, Region, World Rank, Region Rank, 2019 Score, 
+Property Rights, Judical Effectiveness, Government Integrity, Tax Burden, Gov't 
+Spending, Fiscal Health, Business Freedom, Labor Freedom, Monetary Freedom, 
+Trade Freedom, Investment Freedom, Financial Freedom, Tariff Rate (%), Income 
+Tax Rate (%), Corporate Tax Rate (%), Tax Burden % of GDP, Gov't Expenditure % 
+of GDP , Country, Population (Millions), "GDP (Billions, PPP)", GDP Growth Rate
+(%), 5 Year GDP Growth Rate (%), GDP per Capita (PPP), Unemployment (%), 
+Inflation (%), FDI Inflow (Millions), Public Debt (% of GDP).
+
+**Goal**
+
+The goal of this analysis is to conduct a descriptive study of the Economic 
+Freedom Index 2019 dataset to examine the factors that influence economic 
+freedom across different nations and regions. By exploring the distribution of 
+the 2019 scores and their associations with economic, institutional, and social 
+variables, we aim to understand how economic freedom varies globally. The 
+findings from this analysis can help inform policy decisions that promote 
+higher levels of economic freedom and sustainable economic development 
+worldwide.
+
+**Research Questions**
+
+The analysis will address the following key inquiries:
+
+- What are the top 5 countries with the highest levels of economic freedom in 
+2019?
+
+- What are the 5 countries with the lowest levels of economic freedom in 2019?
+
+- How does GDP per capita relate to economic freedom?
+
+- Do countries with stronger property rights tend to exhibit higher economic 
+freedom?
+
+- What is the relationship between government integrity and economic freedom?
+
+- Do countries with greater trade openness experience higher economic freedom?
+
+- Are there regional differences in economic freedom scores across the world?
+
+- What patterns or similarities emerge between countries with high and low 
+economic freedom?
+
+This analysis will provide an in-depth exploration of these questions, aiming to 
+uncover patterns that can help guide policies to strengthen the institutional 
+and economic conditions that foster greater economic freedom globally.
+
+# Variable Description
+
+The Economic Freedom Index 2019 dataset contains several key variables that aim
+to quantify economic freedom and its contributing factors across various 
+countries. Below is a description of the primary variables used in this 
+analysis:
+
+- Country Name: The name of each country included in the Economic Freedom Index.
+
+- Region: The geographical region where the country is located.
+
+- 2019 Score: The overall measure of economic freedom on a scale from 0 to 100,
+where higher values indicate greater freedom.
+
+- Property Rights: Index measuring the degree to which private property is
+protected by the law and enforcement is effective.
+
+- Judicial Effectiveness: Reflects the efficiency and fairness of the judical 
+system, including independence of courts.
+
+- Government Integrity: Indicates the level of transparency and freedom from 
+corruption in government institutions.
+
+- Trade Freedom: Measures the openness of a country's trade policy, based on 
+tariffs and non-tariff barriers.
+
+- GDP per Capita (PPP): Gros Domestic Product per person, adjusted for 
+purchasing power parity, in international dollars.
+
+- GDP Growth Rate (%): The percentage change in a country's GDP from the 
+previous year.
+
+- Population (Millions): Total population of the country, expressed in millions.
+
+This variable description provides a detailed understanding of the dataset, 
+allowing for a clearer interpretation of the analysis results.
+
+# Package Installation and Loading
+
+```{r}
+# Install packages only if not already installed
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("dplyr")) install.packages("dplyr")
+if (!require("ggpubr")) install.packages("ggpubr")
+if (!require("reshape2")) install.packages("reshape2")
+if (!require("janitor")) install.packages("janitor")
+
+# Load libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(reshape2)
+library(janitor)
+library(corrplot)
+```
+
+```{r}
+# Read the Economic Freedom Index Data
+
+economic_freedom_data = read.csv("economic_freedom_index2019_data.csv")
+```
+
+# Descriptive Analysis
+
+```{r, warning = FALSE}
+# Changes data type from character to numeric
+
+economic_freedom_data$X2019.Score <- as.numeric(economic_freedom_data$X2019.Score)
+economic_freedom_data$Property.Rights <- as.numeric(economic_freedom_data$Property.Rights)
+economic_freedom_data$Judical.Effectiveness <- as.numeric(economic_freedom_data$Judical.Effectiveness)
+economic_freedom_data$Government.Integrity <- as.numeric(economic_freedom_data$Government.Integrity)
+economic_freedom_data$Trade.Freedom <- as.numeric(economic_freedom_data$Trade.Freedom)
+economic_freedom_data$GDP.per.Capita..PPP. <- as.numeric(gsub("[$,]", "", economic_freedom_data$GDP.per.Capita..PPP.))
+economic_freedom_data$GDP.Growth.Rate.... <- as.numeric(economic_freedom_data$GDP.Growth.Rate....)
+economic_freedom_data$Population..Millions. <- as.numeric(economic_freedom_data$Population..Millions.)
+```
+
+## Summary Statistics
+
+```{r}
+# Provides summary statistics for variables
+
+summary_vars <- economic_freedom_data %>%
+  select(X2019.Score, Property.Rights, Judical.Effectiveness, Government.Integrity,
+         Trade.Freedom, GDP.per.Capita..PPP., GDP.Growth.Rate...., Population..Millions.)
+
+summary(summary_vars)
+```
+
+## Distribution of Economic Freedom Index Scores
+```{r, warning = FALSE}
+ggplot(economic_freedom_data, aes(x = X2019.Score)) +
+  geom_histogram(binwidth = 2, fill = "steelblue", color = "black") +
+  labs(
+    title = "Distribution of Economic Freedom Scores (2019)",
+    x = "Economic Freedom Score (0–100)",
+    y = "Number of Countries"
+  ) 
+
+```
+
+## Exploring Different Binwidths for the Histogram of Economic Freedom Scores
+
+```{r, warning = FALSE}
+ggplot(economic_freedom_data, aes(x = X2019.Score)) +
+  geom_histogram(binwidth = 0.5, fill = "steelblue", color = "black") +
+  labs(
+    title = "Distribution of Economic Freedom Scores (2019) (Binwdith = 0.5)",
+    x = "Economic Freedom Score (0–100)",
+    y = "Number of Countries"
+  ) 
+
+ggplot(economic_freedom_data, aes(x = X2019.Score)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "black") +
+  labs(
+    title = "Distribution of Economic Freedom Scores (2019) (Binwdith = 1)",
+    x = "Economic Freedom Score (0–100)",
+    y = "Number of Countries"
+  ) 
+
+ggplot(economic_freedom_data, aes(x = X2019.Score)) +
+  geom_histogram(binwidth = 1.5, fill = "steelblue", color = "black") +
+  labs(
+    title = "Distribution of Economic Freedom Scores (2019) (Binwdith = 1.5)",
+    x = "Economic Freedom Score (0–100)",
+    y = "Number of Countries"
+  )
+```
+
+## Density Plot of Economic Freedom Scores
+```{r, warning = FALSE}
+ggplot(economic_freedom_data, aes(x = X2019.Score)) +
+  geom_density(fill = "lightblue") +
+  labs(
+    title = "Density Plot of Economic Freedom Scores (2019)",
+    x = "Economic Freedom Score (0–100)",
+    y = "Density"
+  ) 
+```
+
+**Conclusions**
+
+**Histogram Analysis with Different Binwidths:**
+
+Binwidth = 0.5: The historgram shows a more detailed view which reveals small
+fluctuations in the distribution of economic freedom scores. It would be most 
+useful when exploring fine-grained patterns or checking for small clusters or 
+gaps in the data. Binwidth = 1: The histogram provides a clearer view of the 
+overall shape of the distribution without excessive noise. It would be most 
+useful when exploring descriptive summaries and initial visual analyses. 
+Binwidth = 1.5: The histogram becomes smoother, making overall trends, such as
+the peak around the gobal mean and the slight right skew, easier to see. Most 
+countries scores exist from 50 to 75 with less countries scoring outside that 
+range. It would be most useful when presenting general patterns or summarizing 
+findings.
+
+**Density Plot Analysis:**
+
+The density plot provides a smooth estimate of the distrbution of economic 
+freedom scores. It shows that the bulk of countries are centered around a score
+of approximately 60, with the distribution gradually tapering off toward both 
+higher and lower values. The plot confirms that the distribution is slightly
+right-skewed, indicating that there are relatively few countries with very high 
+freedom scores (80+), while a large number of countries fall within the moderate
+range (50-70).
+
+**Insights and Implications:**
+
+**Economic Freedom Concentration:** The histograms and density plot reveal that 
+the majority of countries have economic freedom scores clustered between 50 and 
+70, suggesting that the global economic freedom is generally moderate. 
+Relatively few countries fall at the extremes of the distribution, with only a 
+handful achieving very high scores above 80 or very low scores below 40.
+
+**Right-Skewed Distribution:** The distribution is slightly right-skewed, 
+indicating that while some nations experience exceptionally high levels of
+economic freedom, many more remain below those top levels. This pattern may 
+reflect structural or institutional challenges, such as weak property rights, 
+government intervention, or limited judicial effectiveness. These challenges
+may prevent countries from reaching the highest tiers of freedom.
+
+**Policy Implications:**
+
+Since most countries cluster in the mid-range of economic freedom, policy 
+efforts should prioritize institutional and regulatory reforms that enhance
+transparency, strengthen judicial independence, and promote open trade.
+Incremental improvements in these areas could help shift the bulk of nations
+toward higher freedom scores and, in turn, stimulate greater economic growth
+and opportunity. 
+
+# GDP Per Capita by Region
+
+```{r, warning = F}
+# Create logged GDP per capita variable
+economic_freedom_data <- economic_freedom_data %>%
+  mutate(Logged_GDP_per_Capita = log(GDP.per.Capita..PPP.))
+
+# Boxplot of GDP per Capita by Region 
+ggplot(economic_freedom_data,
+       aes(x = reorder(Region, -Logged_GDP_per_Capita),
+           y = Logged_GDP_per_Capita, fill = Region)) +
+  geom_boxplot() +
+  labs(
+    title = "GDP per Capita by Region",
+    x = "Region",
+    y = "Logged GDP per Capita"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+From the boxplot analysis of GDP per capita by region, we can draw the following conclusions:
+
+**Significant Regional Difference:** There are clear differences in GDP per 
+capita across regions. Europe and the Middle East and North Africa have the 
+highest median GDP per capita, indicating that wealthier economies are 
+concentrated in these regions. Sub-Saharan Africa, by contrast, has the lowest
+median, suggesting limited economic development relative to other parts of the
+world.
+
+**High Variability in Some Regions:** The Asia-Pacific and Middle East and 
+North Africa regions display the widest spreads, showing that while some 
+countries (e.g., Singapore, Qatar) are very wealthy, others in the same region
+remain far below the regional averages. This reflects substantial within-region
+economic inequality.
+
+**Regions with Lower GDP per Capita:** Sub-Saharan Africa stands out with a 
+consistently lower GDP per capita and a wide range, implying both lower overall
+wealth and uneven development among its countries. The Americas show mid-range 
+values, with both high-income and developing economic represented.
+
+**Outliers:** A few outliers appear above the main boxes, representing countries
+with exceptionally high GDP per capita relative to their regional peers (likely
+advanced financial or resource-driven economies).
+
+**Conclusion:** The boxplot highlights pronounced global inequality in income 
+distribution across regions. Wealthier regions such as Europe and the Middle 
+East cluster toward higher GDP per capita, while Sub-Saharan Africa remains 
+substantially below. The broad spread in regions like Asia-Pacific suggests 
+diverse levels of deelopement, combining both emerging and advanced economies. 
+These findings provide important context for interpreting regional differences 
+in economic freedom, as wealth and institutional strength often reinforce each 
+other.
+
+# Correlation Analysis
+
+```{r, warning = F}
+cor_matrix <- economic_freedom_data %>%
+  select(X2019.Score,
+         Property.Rights,
+         Judical.Effectiveness,
+         Government.Integrity,
+         Trade.Freedom,
+         GDP.per.Capita..PPP.,
+         GDP.Growth.Rate....,
+         Population..Millions.) %>%
+  cor(use = "complete.obs")
+
+# Round to 2 decimals
+round(cor_matrix, 2)
+```
+
+**Correlation Analysis with Corrplot**
+
+```{r, warning = F}
+corrplot(cor_matrix,
+         method = "circle",
+         type = "upper",
+         tl.col = "black",
+         tl.srt = 45,
+         title = "Correlation Matrix of Economic Freedom Factors (2019)",
+         mar = c(0, 0, 1, 0))
+```
+
+**Correlation Analysis and Conclusions**
+
+**Interpretation of the Correlation Analysis:**
+
+Property Rights and Economic Freedom:
+
+There is a strong positive correlation (r = 0.86) between Property Rights and
+Economic Freedom. This suggests that nations with well-established legal
+protections for private ownership, contact enforcement, and secure property
+sysems tend to experience higher levels of overall economic freedom. The 
+protection of property rights appears to be one of the strongest institutional 
+pillars supporting free markets.
+
+Judicial Effectiveness and Economic Freedom: 
+
+A high positive correlation (r = 0.81) indicates that countries with efficient 
+and impartial judicial systems tend to have greater economic freedom. Judicial 
+effectiveness reinforces the rule of law by ensuring contracts are honored and 
+corruption is limited, fostering investor confidence and fair competition.
+
+Government Integrity and Economic Freedom:
+
+The correlation between Government Integrity and Economic Freedom is strong 
+(r = 0.80). This demonstrates that transparency and low corruption levels are 
+closely tied to freer economic systems. When citizens and businesses can trust
+public institutions, economic activity is less distorted by rent-seeking and 
+political favoritism.
+
+Trade Freedom and Economic Freedom:
+
+The relationship between Trade Freedom and overall Economic Freedom is 
+moderately strong (r = 0.71). Countries that maintain open trade policies, such
+as lower tariffs, minimal quotas, and fewer regulatory barriers, tend to perform
+better in terms of overall economic freedom. This reinforces the idea that 
+integration into global markets supports freer domestic economies.
+
+GDP per Capita (PPP) and Economic Freedom:
+
+There is a moderately positive correlation (r = 0.64) between GDP per capita and
+Economic Freedom. Wealthier nations generally enjot higher economic freedom, 
+reflecting how sustained prosperity and robust institutions reinforce one 
+another. However, the relationship is not perfect. Some resource-rich or 
+reforming nations may have higher GDP levels without matching levels of 
+institutional freedom.
+
+GDP Growth Rate and Economic Freedom:
+
+A weak positive correlation (r = 0.18) suggests that short-term economic growth 
+does not strongly predict higher economic freedom. While freer economies may 
+grow more steadily in the long term, annual growth rates can fluctuate due to 
+external shocks, reforms, or commodity price cycles.
+
+Population and Economic FreedomL
+
+There is virutally no correlation (r = -0.04) between population size and 
+economic freedom. This implies that demographic size alone does not determine 
+how free an economy is. Both small and large nations can achieve either strong 
+or weak institutional performance depending on their governance structures.
+
+**Conclusions from the Correlation Analysis**
+
+The results indicate that institutional quality variables, particularly Property 
+Rights, Judicial Effectiveness, and Government Integrity, are the strongest 
+correlates of economic freedom. Trade Freedom and GDP per Capital also show 
+meaningful positive relationships, suggesting that open markets and wealth 
+accumulation reinforce on another. By contrast, GDP Growth Rate and Population 
+exhibit weak or negligible correlations, highlighting that economic freedom 
+depends more on long-term institutional foundations than on short-term economic performance or demographic factors.
+
+**Policy Implications**
+
+These results highlight the importance of strengthening institutions to enhance
+economic freedom. Policies that protect property rights, improve judicial 
+effectiveness, reduce corruption, and promote open trade are most effective in
+fostering long-term prosperity. Ultimately, strong and transparent governance
+services as the foundation for sustainable economic growth and greater overall
+freedom.
+
+## Distribution of Property Rights Scores
+```{r, warning = FALSE}
+ggplot(economic_freedom_data, aes(x = Property.Rights)) +
+  geom_histogram(binwidth = 2, fill = "plum", color = "black") +
+  labs(
+    title = "Distribution of Property Rights Scores",
+    x = "Property Rights Score (0–100)",
+    y = "Number of Countries"
+  ) 
+
+```
+
+## Exploring Different Binwidths for the Histogram of Property Rights Scores
+
+```{r, warning = FALSE}
+ggplot(economic_freedom_data, aes(x = Property.Rights)) +
+  geom_histogram(binwidth = 1, fill = "plum", color = "black") +
+  labs(
+    title = "Distribution of Property Rights Scores (binwidth = 1)",
+    x = "Property Rights Score (0–100)",
+    y = "Number of Countries"
+  ) 
+
+ggplot(economic_freedom_data, aes(x = Property.Rights)) +
+  geom_histogram(binwidth = 1.75, fill = "plum", color = "black") +
+  labs(
+    title = "Distribution of Property Rights Scores (binwidth = 1.75)",
+    x = "Property Rights Score (0–100)",
+    y = "Number of Countries"
+  ) 
+
+ggplot(economic_freedom_data, aes(x = Property.Rights)) +
+  geom_histogram(binwidth = 2.25, fill = "plum", color = "black") +
+  labs(
+    title = "Distribution of Property Rights Scores (binwidth = 2.25)",
+    x = "Property Rights Score (0–100)",
+    y = "Number of Countries"
+  ) 
+```
+
+\newpage
+
+## Density Plot of Property Rights Scores
+```{r, warning = FALSE}
+ggplot(economic_freedom_data, aes(x = Property.Rights)) +
+  geom_density(fill = "mediumorchid") +
+  labs(
+    title = "Density Plot of Property Rights Scores",
+    x = "Property Rights Score (0–100)",
+    y = "Density"
+  ) 
+```
+
+**Conclusions**
+
+**Histogram Analysis with Different Binwidths:**
+
+Binwidth = 1: The histogram shows a more detailed view of the Property Rights 
+distributions, showing small fluctuations and minor peaks across the score 
+range. However, the high granularity makes it harder to see the overall shape of 
+the distribution. Binwidth = 1.75: The histogram strikes a balance between 
+precision and clarity. It highlights that most countries cluster between 40 and 
+65 on the Property Rights scale, with fewer countries at either extreme. 
+Binwidth = 2.25: The histogram smooths out variation and reveals the main 
+pattern that Property Rights scores are concentrated around mid-range values. 
+Only a small number of countries achieve a very high (above 80) or very low 
+(below 25) score.
+
+**Density Plot Analysis:**
+
+The density plot provides a smooth representation of the Property Rights 
+distribution. It shows a clear concentration of countries around the mid-range 
+(40-60), tapering off toward both ends. The slight double-peaked shape suggests 
+a possible bimodal pattern, indicating the while some nations have moderately 
+strong property protections, others remain considerably weaker in safeguarding 
+ownership and enforcement rights.
+
+**Insights and Implications:**
+
+**Property Rights Concentration:** The histograms and density plot reveal that 
+the majority of countries maintain moderate property rights with scores 
+clustered between 40 and 60. This suggests that while property ownership is 
+broadly recognized, consistent enforcement and legal protection still lag 
+globally.
+
+**Outliers:** A smaller number of nations exhibit very low or high scores, 
+reflecting stark institutional contrasts. Countries range from weak legal 
+systems and corruption issues to highly developed judicial protections.
+
+**Policy Implications:** Strengthening property rights should be a key 
+institutional priority especially in developing economies. Policies aimed at 
+improving judicial enforcement, transparency, and corruption control can help 
+nations move toward stronger, more reliable property systems that foster 
+improvement and economic freedom.
+
+**Explanation of the Two Modes:**
+
+The presence of two modes (or peaks) in the density plot of property right 
+scores suggests that the distribution of property right scores is bimodal. This 
+indicates that there are two distinct groups of countries with different typical 
+property right score levels. Here’s how to interpret this:
+
+First Mode (Lower Property Right Scores): The first peak, typically around 
+scores of 30-45, represents countries with weaker property right institutions. 
+These nations often struggle with inconsistent legal enforcement, high levels 
+of corruption, or unclear land ownership systems. In such environment, citizens
+and businesses may face difficulties securing ownership titles or resolving
+disputes, discouraging both domestic and foregin investment. Contributing 
+factors may include: weak judicial systems and limited rule of law, government 
+interference or expropriation risks, inefficient land registries or bureaucratic
+delays.
+
+Second Mode (Higher Property Right Scores): The second peak, typically appearing 
+between 65-80, represents countries with well-established and consistently 
+enforce property rights. These nations tend to have transparent legal systems, 
+efficient courts, and stable governments that uphold ownership and contractual 
+agreements. Commmon characteristics include: strong judicial independence and 
+anti-corruption frameworks, secure land tenure and low expropriation risk, 
+institutional reliability that supports long-term economic growth.
+
+# Research Questions
+
+**What are the top 5 countries with the highest levels of economic freedom in**
+**2019?**
+
+```{r, warning = F}
+# Selecting the top 5 countries
+
+top5 <- economic_freedom_data %>%
+  arrange(desc(X2019.Score)) %>%
+  select(Country.Name, X2019.Score) %>%
+  head(5)
+
+top5
+```
+
+```{r, warning = F}
+# Visualizing the top 5 countries
+
+ggplot(top5, aes(x = reorder(Country.Name, X2019.Score), y = X2019.Score, fill = Country.Name)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = X2019.Score), vjust = -0.5, color = "black", size = 4) +
+  theme_minimal() +
+  labs(
+    title = "Top 5 Countries by Economic Freedom (2019)",
+    x = "Country",
+    y = "Economic Freedom Score (0–100)"
+  )
+
+```
+
+**What are the top 5 countries with the lowest levels of economic freedom in**
+**2019?**
+
+```{r, warning = F}
+# Selecting the bottom 5 countries
+
+bottom5 <- economic_freedom_data %>%
+  arrange(X2019.Score) %>%
+  select(Country.Name, X2019.Score) %>%
+  head(5)
+
+bottom5
+```
+
+```{r, warning = F}
+# Visualizing the bottom 5 countries
+
+ggplot(bottom5, aes(x = reorder(Country.Name, X2019.Score), y = X2019.Score, fill = Country.Name)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = X2019.Score), vjust = -0.5, color = "black", size = 4) +
+  theme_minimal() +
+  labs(
+    title = "Top 5 Countries with Lowest Economic Freedom (2019) Score",
+    x = "Country",
+    y = "Economic Freedom Score (0–100)"
+  )
+```
+
+**How does GDP per capita relate to economic freedom?**
+
+```{r, warning = F}
+# Finding correlation between GDP per capita and economic freedom
+
+gdp_economic_freedom_cor = cor(economic_freedom_data$X2019.Score,
+    economic_freedom_data$GDP.per.Capita..PPP.,
+    use = "complete.obs")
+
+gdp_economic_freedom_cor
+```
+
+```{r, warning = F}
+# Plotting scatterplot of GDP per capita vs economic freedom
+
+gdp_freedom_plot <- ggplot(economic_freedom_data,
+                           aes(x = GDP.per.Capita..PPP., y = X2019.Score)) +
+  geom_point(aes(color = Region), size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(
+    title = "GDP per Capita (PPP) vs Economic Freedom Score (2019)",
+    x = "GDP per Capita (PPP, in $)",
+    y = "Economic Freedom Score (0–100)",
+    caption = "Source: Heritage Foundation, Economic Freedom Index 2019"
+  ) +
+  theme_minimal()
+
+gdp_freedom_plot
+```
+
+**Statistical Summary of the Relationship**
+
+We can further analyze the relationship by dividing the countries into groups 
+based on their GDP per capita. This will allow us to compare happiness scores 
+across wealth tiers.
+
+```{r, warning = F}
+# Create GDP per capita categories (quartiles)
+economic_freedom_data <- economic_freedom_data %>%
+  mutate(GDP_Category = cut(GDP.per.Capita..PPP.,
+                            breaks = quantile(GDP.per.Capita..PPP.,
+                                              probs = seq(0, 1, 0.25),
+                                              na.rm = TRUE),
+                            include.lowest = TRUE,
+                            labels = c("Low", "Lower-Middle",
+                                       "Upper-Middle", "High")))
+
+# Summary of Economic Freedom by GDP category
+gdp_freedom_summary <- economic_freedom_data %>%
+  group_by(GDP_Category) %>%
+  summarise(
+    Mean_Freedom = mean(X2019.Score, na.rm = TRUE),
+    SD_Freedom = sd(X2019.Score, na.rm = TRUE),
+    Min_Freedom = min(X2019.Score, na.rm = TRUE),
+    Max_Freedom = max(X2019.Score, na.rm = TRUE)
+  )
+
+# Display the summary table
+gdp_freedom_summary
+```
+
+**Visualization by GDP Category**
+
+To further understand how GDP per capita influences happiness, let’s visualize 
+the happiness scores across different GDP categories.
+
+```{r, warning = F}
+ggplot(economic_freedom_data,
+       aes(x = GDP_Category, y = X2019.Score, fill = GDP_Category)) +
+  geom_boxplot() +
+  labs(
+    title = "Economic Freedom Score by GDP Category",
+    x = "GDP Category",
+    y = "Economic Freedom Score (0–100)",
+    fill = "GDP Category"
+  ) +
+  theme_minimal()
+```
+
+**Conclusion**
+
+The results of the analysis show a moderately strong positive correlation
+(r = 0.637) between GDP per capita and economic freedom. This indicates that 
+countries with higher income levels generally tend to exhibit greater economic 
+freedom. The scatterplot clearly illustrates this upward trend, although some 
+variability remains—suggesting that while economic prosperity and freedom often 
+go hand in hand, GDP alone does not fully determine a nation’s level of economic
+freedom.
+
+The summary statistics and boxplot further reinforce this relationship: nations
+in the High GDP category have the highest average economic freedom scores, while
+those in the Low GDP group score noticeably lower. However, the presence of 
+variation within each GDP tier implies that additional institutional and policy 
+factors, such as governance integrity, trade openness, and property rights, also 
+play key roles in shaping economic freedom.
+
+**Do countries with stronger property rights tend to exhibit higher economic** 
+**freedom?**
+
+```{r, warning = F}
+# Calculate the correlation between Property Rights and Economic Freedom
+property_rights_freedom_correlation = cor(economic_freedom_data$Property.Rights,
+                                          economic_freedom_data$X2019.Score,
+                                          use = "complete.obs")
+
+# Display the correlation value
+property_rights_freedom_correlation
+```
+
+```{r, warning = F}
+# Scatter plot: Property Rights vs Economic Freedom
+ggplot(economic_freedom_data, aes(x = Property.Rights, y = X2019.Score)) +
+  geom_point(color = "mediumorchid", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(
+    title = "Property Rights vs Economic Freedom Score (2019)",
+    x = "Property Rights Score (0–100)",
+    y = "Economic Freedom Score (0–100)",
+    caption = "Source: Heritage Foundation, Economic Freedom Index 2019"
+  ) +
+  theme_minimal()
+```
+
+```{r, warning = F}
+# Create categories based on Property Rights scores (split into quintiles)
+economic_freedom_data = economic_freedom_data %>%
+  mutate(Property_Rights_Category = cut(Property.Rights,
+                                        breaks = quantile(Property.Rights, probs = seq(0, 1, 0.2), na.rm = TRUE),
+                                        include.lowest = TRUE,
+                                        labels = c("Low Property Rights",
+                                                   "Lower-Middle Property Rights",
+                                                   "Upper-Middle Property Rights",
+                                                   "High Property Rights",
+                                                   "Very High Property Rights")))
+
+# Summary of economic freedom scores by property rights category
+property_rights_freedom_summary = economic_freedom_data %>%
+  group_by(Property_Rights_Category) %>%
+  summarise(
+    Mean_Freedom = mean(X2019.Score, na.rm = TRUE),
+    SD_Freedom = sd(X2019.Score, na.rm = TRUE),
+    Min_Freedom = min(X2019.Score, na.rm = TRUE),
+    Max_Freedom = max(X2019.Score, na.rm = TRUE)
+  )
+
+# Display the summary
+property_rights_freedom_summary
+
+```
+
+```{r, warning = F}
+# Boxplot of Economic Freedom by Property Rights Category
+ggplot(economic_freedom_data, aes(x = Property_Rights_Category, y = X2019.Score, fill = Property_Rights_Category)) +
+  geom_boxplot() +
+  labs(
+    title = "Economic Freedom Score by Property Rights Category (2019)",
+    x = "Property Rights Category",
+    y = "Economic Freedom Score (0–100)",
+    fill = "Property Rights Category"
+  ) +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+**What is the relationship between government integrity and economic freedom?**
+
+```{r, warning = F}
+# Calculate the correlation between Government Integrity and Economic Freedom
+gov_integrity_freedom_correlation = cor(economic_freedom_data$Government.Integrity,
+                                        economic_freedom_data$X2019.Score,
+                                        use = "complete.obs")
+
+# Display the correlation value
+gov_integrity_freedom_correlation
+```
+
+```{r, warning = F}
+# Scatter plot: Government Integrity vs Economic Freedom
+ggplot(economic_freedom_data, aes(x = Government.Integrity, y = X2019.Score)) +
+  geom_point(color = "darkgreen", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(
+    title = "Government Integrity vs Economic Freedom Score (2019)",
+    x = "Government Integrity Score (0–100)",
+    y = "Economic Freedom Score (0–100)",
+    caption = "Source: Heritage Foundation, Economic Freedom Index 2019"
+  ) +
+  theme_minimal()
+```
+
+```{r, warning = F}
+# Create categories based on Government Integrity (quintiles)
+economic_freedom_data <- economic_freedom_data %>%
+  mutate(GovIntegrity_Category = cut(Government.Integrity,
+                                     breaks = quantile(Government.Integrity, probs = seq(0, 1, 0.2), na.rm = TRUE),
+                                     include.lowest = TRUE,
+                                     labels = c("Low Government Integrity",
+                                                "Lower-Middle Government Integrity",
+                                                "Upper-Middle Government Integrity",
+                                                "High Government Integrity",
+                                                "Very High Government Integrity")))
+
+```
+
+```{r, warning = F}
+# Summary of Economic Freedom by Government Integrity category
+gov_integrity_freedom_summary <- economic_freedom_data %>%
+  group_by(GovIntegrity_Category) %>%
+  summarise(
+    Mean_Freedom = mean(X2019.Score, na.rm = TRUE),
+    SD_Freedom   = sd(X2019.Score, na.rm = TRUE),
+    Min_Freedom  = min(X2019.Score, na.rm = TRUE),
+    Max_Freedom  = max(X2019.Score, na.rm = TRUE)
+  )
+
+# Display the summary
+gov_integrity_freedom_summary
+
+```
+
+```{r, warning = F}
+# Boxplot of Economic Freedom by Government Integrity category
+ggplot(economic_freedom_data,
+       aes(x = GovIntegrity_Category, y = X2019.Score, fill = GovIntegrity_Category)) +
+  geom_boxplot() +
+  labs(
+    title = "Economic Freedom Score by Government Integrity Category (2019)",
+    x = "Government Integrity Category",
+    y = "Economic Freedom Score (0–100)",
+    fill = "Government Integrity Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
+```
+
+Conclusion
+
+The results of the analysis show a strong positive correlation between 
+government integrity and economic freedom. The scatterplot indicates that 
+countries with higher levels of government integrity tend to have higher 
+economic freedom scores, reflecting the role of transparency and accountability 
+in promoting open markets. The statistical summary and boxplot further confirm 
+this relationship, showing that nations with higher integrity categories 
+consistently achieve higher average economic freedom scores.
+
+**Do countries with greater trade openness experience higher economic freedom?**
+
+```{r, warning = F}
+# Calculate the correlation between Trade Freedom and Economic Freedom
+trade_freedom_correlation <- cor(economic_freedom_data$Trade.Freedom,
+                                 economic_freedom_data$X2019.Score,
+                                 use = "complete.obs")
+
+# Display the correlation value
+trade_freedom_correlation
+```
+
+```{r, warning = F}
+# Scatter plot of Trade Freedom vs Economic Freedom
+ggplot(economic_freedom_data, aes(x = Trade.Freedom, y = X2019.Score)) +
+  geom_point(color = "brown", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(
+    title = "Trade Freedom vs Economic Freedom Score (2019)",
+    x = "Trade Freedom Score (0–100)",
+    y = "Economic Freedom Score (0–100)",
+    caption = "Source: Heritage Foundation, Economic Freedom Index 2019"
+  ) +
+  theme_minimal()
+
+```
+
+```{r, warning = F}
+# Create Trade Freedom categories (quintiles)
+economic_freedom_data <- economic_freedom_data %>%
+  mutate(TradeFreedom_Category = cut(Trade.Freedom,
+                                     breaks = quantile(Trade.Freedom, probs = seq(0, 1, 0.2), na.rm = TRUE),
+                                     include.lowest = TRUE,
+                                     labels = c("Low Trade Freedom",
+                                                "Lower-Middle Trade Freedom",
+                                                "Upper-Middle Trade Freedom",
+                                                "High Trade Freedom",
+                                                "Very High Trade Freedom")))
+
+# Summary of Economic Freedom by Trade Freedom category
+trade_freedom_summary <- economic_freedom_data %>%
+  group_by(TradeFreedom_Category) %>%
+  summarise(
+    Mean_Freedom = mean(X2019.Score, na.rm = TRUE),
+    SD_Freedom   = sd(X2019.Score, na.rm = TRUE),
+    Min_Freedom  = min(X2019.Score, na.rm = TRUE),
+    Max_Freedom  = max(X2019.Score, na.rm = TRUE)
+  )
+
+# Display the summary
+trade_freedom_summary
+
+```
+
+```{r, warning = F}
+# Boxplot of Economic Freedom by Trade Freedom category
+ggplot(economic_freedom_data,
+       aes(x = TradeFreedom_Category, y = X2019.Score, fill = TradeFreedom_Category)) +
+  geom_boxplot() +
+  labs(
+    title = "Economic Freedom Score by Trade Freedom Category (2019)",
+    x = "Trade Freedom Category",
+    y = "Economic Freedom Score (0–100)",
+    fill = "Trade Freedom Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
+```
+
+Conclusion
+
+The results of the analysis show a strong positive correlation between trade 
+freedom and economic freedom. The scatterplot demonstrates that countries with 
+greater trade openness tend to achieve higher levels of economic freedom, 
+highlighting the importance of free trade policies and reduced tariff barriers. 
+The boxplot further supports this relationship, showing that nations in higher 
+trade freedom categories consistently exhibit higher average economic freedom 
+scores.
+
+**Are there regional differences in economic freedom scores across the world?**
+
+```{r, warning = F}
+# Group data by region and summarize economic freedom scores
+regional_freedom_summary <- economic_freedom_data %>%
+  group_by(Region) %>%
+  summarise(
+    Mean_Freedom = mean(X2019.Score, na.rm = TRUE),
+    SD_Freedom   = sd(X2019.Score, na.rm = TRUE),
+    Min_Freedom  = min(X2019.Score, na.rm = TRUE),
+    Max_Freedom  = max(X2019.Score, na.rm = TRUE)
+  ) %>%
+  arrange(desc(Mean_Freedom))
+
+# Display the summary
+regional_freedom_summary
+
+```
+
+```{r, warning = F}
+# Boxplot of Economic Freedom Scores by Region
+ggplot(economic_freedom_data,
+       aes(x = reorder(Region, X2019.Score, FUN = median),
+           y = X2019.Score,
+           fill = Region)) +
+  geom_boxplot() +
+  labs(
+    title = "Economic Freedom Scores by Region (2019)",
+    x = "Region",
+    y = "Economic Freedom Score (0–100)",
+    fill = "Region"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Conclusion
+
+Regional Variability: There are notable differences in economic freedom across 
+regions. Europe has the highest mean economic freedom score, followed by the 
+Middle East and North Africa, and the Asia-Pacific region. In contrast, 
+Sub-Saharan Africa ranks the lowest, showing limited economic freedom overall.
+
+Regions with High Economic Freedom: Europe stands out with the highest average 
+score (68.6), reflecting strong institutions, open markets, and effective 
+property rights protections. These regions typically benefit from transparent 
+governance and stable regulatory environments that promote private enterprise.
+
+Regions with Low Economic Freedom: Sub-Saharan Africa (mean 54.2) and the 
+Americas (mean 59.6) have lower median economic freedom scores. This may be 
+linked to greater government intervention, weaker property rights enforcement, 
+and political instability that constrain market efficiency.
+
+Variability within Regions: The Asia-Pacific and Americas regions exhibit wider 
+ranges of scores, suggesting greater internal diversity. Some economies are 
+highly open and free, while others face regulatory and institutional challenges 
+that limit freedom.
+
+**What patterns or similarities emerge between countries with high and low**
+**economic freedom?**
+
+```{r, warning = F}
+# Select the top 5 countries with the highest economic freedom
+top_5_freedom <- economic_freedom_data %>%
+  arrange(desc(X2019.Score)) %>%
+  select(Country, X2019.Score, Property.Rights, Government.Integrity, Tax.Burden,
+         Business.Freedom, Trade.Freedom, Investment.Freedom, Financial.Freedom) %>%
+  head(5)
+
+# Select the bottom 5 countries with the lowest economic freedom
+bottom_5_freedom <- economic_freedom_data %>%
+  arrange(X2019.Score) %>%
+  select(Country, X2019.Score, Property.Rights, Government.Integrity, Tax.Burden,
+         Business.Freedom, Trade.Freedom, Investment.Freedom, Financial.Freedom) %>%
+  head(5)
+
+# Display both tables
+top_5_freedom
+bottom_5_freedom
+
+```
+
+```{r, warning = F}
+# Calculate the mean and standard deviation for each factor for both groups
+freedom_comparison <- data.frame(
+  Factor = c("Property.Rights", "Government.Integrity", "Tax.Burden", "Business.Freedom",
+             "Trade.Freedom", "Investment.Freedom", "Financial.Freedom"),
+  High_Freedom_Mean = sapply(top_5_freedom[3:9], mean, na.rm = TRUE),
+  High_Freedom_SD = sapply(top_5_freedom[3:9], sd, na.rm = TRUE),
+  Low_Freedom_Mean = sapply(bottom_5_freedom[3:9], mean, na.rm = TRUE),
+  Low_Freedom_SD = sapply(bottom_5_freedom[3:9], sd, na.rm = TRUE)
+)
+
+# Display the summary comparison
+freedom_comparison
+
+```
+
+```{r, warning = F}
+# Melt the data for easier plotting
+freedom_comparison_melted <- melt(freedom_comparison, id.vars = "Factor",
+                                  variable.name = "Group", value.name = "Value")
+
+# Plot comparison of key factors: High vs Low Economic Freedom
+ggplot(freedom_comparison_melted, aes(x = Factor, y = Value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Comparison of Key Factors: High vs Low Economic Freedom Countries",
+       x = "Factors",
+       y = "Mean Score (0–100)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+Conclusion
+
+Economic Institutions: Countries with high economic freedom tend to have 
+stronger institutions, reflected in significantly higher property rights and 
+government integrity scores. These nations generally maintain transparent legal 
+systems and low levels of corruption, creating a stable environment for economic activity.
+
+Business and Trade Environment: High-freedom countries exhibit more open 
+markets, with higher trade, investment, and financial freedom scores. These 
+factors suggest that fewer restrictions on capital flows and international trade 
+foster greater overall economic freedom.
+
+Taxation and Regulation: Low-freedom countries typically have higher tax burdens 
+and more restrictive regulatory frameworks, which limit private enterprise and discourage investment.
+
+Overall Patterns: In short, the data indicate that economic openness, 
+institutional integrity, and protection of property rights are key commonalities 
+among high-freedom nations, while excessive government intervention and weak 
+rule of law are consistent traits of low-freedom countries.
+
+# Final Policy Implications
+
+The results of this analysis highlight that higher economic freedom is most strongly associated with strong institutions—particularly well-protected property rights, judicial effectiveness, and government integrity. Regions with lower freedom often face structural challenges such as corruption, weak governance, and trade barriers. Policymakers should prioritize institutional reforms that strengthen rule of law, enhance transparency, and promote open markets. Encouraging stable regulatory frameworks and reducing trade restrictions can help countries move toward greater economic freedom and long-term prosperity.
